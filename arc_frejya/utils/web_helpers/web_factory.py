@@ -1,7 +1,9 @@
 # coding: utf-8
 import os
 import sys
+import selenium
 from selenium import webdriver
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 
 path_frejya_arc = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 if path_frejya_arc not in sys.path:
@@ -28,10 +30,10 @@ def get_web(browser=None, workspace=None):
         browser = conf.get_config_value('browser')
 
     browser = browser.capitalize()
-    driver_type = eval("webdriver." + browser)
     ver_driver = VerWebDriver(drivers_dir, browser)
     ver_driver.verify_current_driver()
-    return Web(driver_type(ver_driver.driver_path))
+    driver_type = eval("webdriver." + browser)
+    return Web(driver_type(executable_path=r'' + ver_driver.driver_path + ''))
 
 
 

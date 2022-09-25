@@ -23,7 +23,7 @@ class Web(object):
     def title(self):
         return self._web_driver.title
 
-    def curent_url(self):
+    def current_url(self):
         return self._web_driver.current_url
 
     def get_text_xpath(self, xpath: str):
