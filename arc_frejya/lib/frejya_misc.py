@@ -1,4 +1,13 @@
-from termcolor import colored
+#!/usr/bin/python3
+# coding: utf-8
+import os
+try:
+    from termcolor import colored
+except Exception as e:
+    print(e)
+    print("Trying to install termcolor")
+    os.system('pip install termcolor')
+    from termcolor import colored
 
 __author__ = 'Adrián Rodríguez Carneiro'
 
@@ -15,5 +24,3 @@ def title(color='blue', color2='white', on_color='yellow'):
     print(colored("---------------------------------------------------------------", color, on_color="on_" + on_color))
     print(colored("------------", color, on_color="on_" + on_color) + colored(" Developed by Adrián Rodríguez Carneiro ", 'green') + colored("-----------", color, on_color="on_" + on_color))
     print(colored("---------------------------------------------------------------", color, on_color="on_" + on_color))
-
-

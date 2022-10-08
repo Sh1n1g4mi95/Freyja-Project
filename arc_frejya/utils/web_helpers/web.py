@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # coding: utf-8
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait

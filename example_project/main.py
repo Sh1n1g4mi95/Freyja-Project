@@ -1,9 +1,10 @@
+#!/usr/bin/python3
 import datetime
 import os
 import sys
 import time
 
-path_frejya_arc = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+path_frejya_arc = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if path_frejya_arc not in sys.path:
     sys.path.append(path_frejya_arc)
 
