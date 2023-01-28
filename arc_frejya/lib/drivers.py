@@ -70,9 +70,25 @@ class VerWebDriver:
 
             :return: Binary filename version
         """
+        self.logger.info(f'Obtaining {self.browser_type.value["driver"]} webdriver version.')
         version = subprocess.check_output([self.driver_path, '-V'])
         version = re.match(r'.*?([\d.]+).*?', version.decode('utf-8'))[1]
         return version
+
+    def get_navigator_version(self, browser_name: str, platform: str, logger: logging):
+        """
+            Returns the version of navigator installed on client.
+
+            :param browser_name: Name of navigator
+            :param platform: Platform (Linux, Windows, ...)
+            :param logger: Logger
+            :return: Navigator version
+        """
+        try:
+            logger.info(f'Obtaining {browser_name} navigator version.')
+            return eval("self.get_nav_version_"+platform[0:3])(browser_name)
+        except Exception as e:
+            raise e
 
     def get_nav_version(self):
         """
@@ -82,8 +98,7 @@ class VerWebDriver:
         """
         try:
             platform, _ = get_platform_architecture()
-            version = eval("self.get_nav_version_"+platform[0:3])(self.browser_type.name)
-            return version
+            return self.get_navigator_version(platform, self.browser_type.name, self.logger)
         except Exception as e:
             self.logger.error(e)
             sys.exit(-14)
@@ -92,26 +107,26 @@ class VerWebDriver:
     def get_nav_version_lin(browser_name: str):
         # ToDo: desarrollar esto. Encontrar forma de obtener las versiones de
         #       navegadores en linux de forma eficiente y escalable para todos
-        browser_name = str.lower(browser_name)
-        version = ""
-        if version:
-            return version
-        else:
-            raise RuntimeError(" Version of '" + browser_name + "' Navigator could not be obtained for this Linux OS")
+        # browser_name = str.lower(browser_name)
+        # version = ""
+        # if version:
+        #     return version
+        # else:
+        raise RuntimeError(" Version of '" + browser_name + "' Navigator could not be obtained for this Linux OS")
 
     @staticmethod
     def get_nav_version_mac(browser_name: str):
         # ToDo: desarrollar esto, no tengo un MAC XD
-        browser_name = str.lower(browser_name)
-        version = ""
-        if browser_name == "chrome":
-            process = subprocess.Popen(['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-                                        '--version'], stdout=subprocess.PIPE)
-            version = process.communicate()[0].decode('UTF-8').replace('Google Chrome', '').strip()
-        if version:
-            return version
-        else:
-            raise RuntimeError(" Version of '" + browser_name + "' Navigator could not be obtained for this MAC OS")
+        # browser_name = str.lower(browser_name)
+        # version = ""
+        # if browser_name == "chrome":
+        #     process = subprocess.Popen(['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        #                                 '--version'], stdout=subprocess.PIPE)
+        #     version = process.communicate()[0].decode('UTF-8').replace('Google Chrome', '').strip()
+        # if version:
+        #     return version
+        # else:
+        raise RuntimeError(" Version of '" + browser_name + "' Navigator could not be obtained for this MAC OS")
 
     @staticmethod
     def get_nav_version_win(browser_name: str):
@@ -147,21 +162,24 @@ class VerWebDriver:
         else:
             raise RuntimeError(" Version of '" + browser_name + "' Navigator could not be obtained for this Windows OS")
 
-    def download_webdriver(self):
+    def download_webdriver(self, nav_version=None):
         """
             Downloads, unzips and installs webdriver.
             If a webdriver binary is found in PATH it will be copied, otherwise downloaded.
 
             :return: The file path of webdriver
         """
-        nav_version = self.get_nav_version()
+        self.logger.warning(f'Downloading webdriver...')
+        browser_name = self.browser_type.value["name"]
         if not nav_version:
-            self.logger.debug(f'{self.browser_type.value["name"]} is not installed.')
-            return Exception(f'{self.browser_type.value["name"]} is not installed.')
-        navdrive_version = self.get_matched_navdrive_version(self.browser_type.value["name"], nav_version)
-        if not navdrive_version:
-            self.logger.warning(f'Can not find driver for currently installed {self.browser_type.value["name"]} version.')
-            return Exception(f'Can not find driver for currently installed {self.browser_type.value["name"]} version.')
+            nav_version = self.get_nav_version()
+
+        try:
+            navdrive_version = self.get_matched_navdrive_version(browser_name, nav_version)
+        except Exception as e:
+            self.logger.error(e)
+            self.logger.error(f'Can not find driver for currently {browser_name} installed version.')
+            sys.exit(-7)
 
         if os.path.isfile(self.driver_path):
             self.logger.info(f'Deleting file {self.driver_path} ...')
@@ -197,21 +215,24 @@ class VerWebDriver:
             :param version: webdriver version string
             :return: the version of chromedriver
         """
-        if str.lower(nav) == "chrome":
-            doc = urllib.request.urlopen('https://chromedriver.storage.googleapis.com').read()
-            root = elemTree.fromstring(doc)
-            for k in root.iter('{http://doc.s3.amazonaws.com/2006-03-01}Key'):
-                if k.text.find(version.split('.')[0] + '.') == 0:
-                    return k.text.split('/')[0]
-        elif str.lower(nav) == "firefox":   # Nota: este navegador es especialito
-            return "v0.29.0"        # Se elige la versión a pedalete
-        elif str.lower(nav) == "edge":
-            doc = urllib.request.urlopen('https://msedgedriver.azureedge.net').read()
-            root = elemTree.fromstring(doc)
-            for k in root[0].iter("Name"):
-                if k.text.find(version.split('.')[0] + '.') == 0:
-                    return k.text.split('/')[0]
-            return
+        try:
+            if str.lower(nav) == "chrome":
+                doc = urllib.request.urlopen('https://chromedriver.storage.googleapis.com').read()
+                root = elemTree.fromstring(doc)
+                for k in root.iter('{http://doc.s3.amazonaws.com/2006-03-01}Key'):
+                    if k.text.find(version.split('.')[0] + '.') == 0:
+                        return k.text.split('/')[0]
+            elif str.lower(nav) == "firefox":   # Nota: este navegador es especialito
+                return "v0.29.0"        # Se elige la versión a pedalete
+            elif str.lower(nav) == "edge":
+                with urllib.request.urlopen('https://msedgedriver.azureedge.net') as response:
+                    doc = response.read()
+                    root = elemTree.fromstring(doc)
+                    for k in root[0].iter("Name"):
+                        if k.text.find(version.split('.')[0] + '.') == 0:
+                            return k.text.split('/')[0]
+        except Exception as e:
+            raise RuntimeError(e)
 
     @staticmethod
     def get_driver_url(nav: str, version: str):
@@ -238,15 +259,30 @@ class VerWebDriver:
             nav_indicator = '/edgedriver_'
         return base_url + version + nav_indicator + platform + architecture + '.zip'
 
-    def verify_current_driver(self):
-        # ToDo: poner logs informativos y tal, crear ficheros de logs de salida para tener mayor trazabilidad
+    def verify_nav_driver(self):
         try:
-            if self.browser_type.name == 'firefox':  # Nota: el driver de firefox y su navegador no coinciden en version
-                if not os.path.isfile(self.driver_path):
-                    self.download_webdriver()
-            elif not os.path.isfile(self.driver_path) or \
-                    (self.get_nav_version().split('.')[0] != self.get_driver_version().split('.')[0]):
-                self.download_webdriver()
+            self.logger.info(f'Verifying {self.browser_type.value["driver"]} webdriver version.')
+            driver_major_version = ""
+            driver_exists = os.path.isfile(self.driver_path)
+            if driver_exists:
+                driver_major_version = self.get_driver_version().split('.')[0]
+            else:   # Nota: el driver de firefox y su navegador no coinciden en version
+                self.logger.warning(f'Webdriver for {self.browser_type.value["driver"]} navigator is not in the path.')
+
+            self.logger.info(f'Verifying {self.browser_type.value["driver"]} navigator version.')
+            platform, _ = get_platform_architecture()
+            if platform == 'win':   # ToDo: desarrollor para otras plataformas (Linux) y quitar el if
+                nav_version = self.get_navigator_version(self.browser_type.name, platform, self.logger)
+                major_version = nav_version.split('.')[0]
+                if major_version != driver_major_version:
+                    self.logger.warning(f'Webdriver major version ({driver_major_version}) does not match'
+                                        f' with navigator major version ({major_version}).')
+                    if self.browser_type.name == 'firefox':
+                        if not driver_exists:
+                            self.logger.error(f'Webdriver for Firefox navigator is not allowed to auto download.')
+                            # ToDo: hacer en exit del programa
+                    else:
+                        self.download_webdriver(nav_version=nav_version)
         except Exception as e:
             raise e
 
@@ -255,10 +291,9 @@ def get_platform_architecture():
     if sys.platform.startswith('linux') and sys.maxsize > 2 ** 32:
         platform = 'linux'
         architecture = '64'
-    # ToDo: plantear el desarrollo para MACOS. Actulamente ni merece la pena
-    # elif sys.platform == 'darwin':
-    #     platform = 'mac'
-    #     architecture = '64'
+    elif sys.platform == 'darwin':
+        platform = 'mac'
+        architecture = '64'
     elif sys.platform.startswith('win'):
         platform = 'win'
         architecture = '32'

@@ -1,0 +1,5 @@
+.idea/
+arc_frejya/drivers/
+*__pycache__/
+arc_frejya/logs/*.log
+example_project/drivers/*driver.*

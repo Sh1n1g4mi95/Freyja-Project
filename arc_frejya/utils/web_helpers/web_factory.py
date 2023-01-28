@@ -40,7 +40,7 @@ def get_web(browser=None, workspace=None):
         browser = browser.capitalize()
 
         ver_driver = VerWebDriver(drivers_dir, browser)
-        ver_driver.verify_current_driver()
+        ver_driver.verify_nav_driver()
         driver_type = eval("webdriver." + browser)
         return Web(driver_type(executable_path=r'' + ver_driver.driver_path + ''))
     except Exception as e:
