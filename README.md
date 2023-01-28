@@ -1,4 +1,4 @@
-# ![Talos-Logo](arc_frejya/resources/img/Frejya_logo.png) Freyja-Project Automation Framework
+# ![Frejya-Logo](arc_frejya/resources/img/Frejya_logo.png) Freyja-Project Automation Framework
 
 > A framework developed and supported by ***Adrián Rodríguez Carneiro***
 
@@ -15,8 +15,8 @@ tests web in a simple, fast and easy maintenance way.
    - [Download mode](#download-mode) 
 4. [How to install](#how-to-install)  
 5. [Folder structure](#folder-structure)  
-6. [Freyja-Project settings](#talosbdd-settings)
-   - [Freyja-Project config](#talosbdd-config)
+6. [Freyja-Project settings](#Freyja-Project-settings)
+   - [Freyja-Project config](#Freyja-Project-config)
 
 ----
 
@@ -77,9 +77,9 @@ Within the **Freyja-Project** Framework you will find the following folders
 
 ----
 
-## <a id="talosbdd-settings">Freyja-Project settings</a>
+## <a id="Freyja-Project-settings">Freyja-Project settings</a>
 
-### <a id="talosbdd-config">Freyja-Project config</a>
+### <a id="Freyja-Project-config">Freyja-Project config</a>
 
 The default **Freyja-Project** configuration is in the **config.ini** file in the "arc_frejya" folder.
 
