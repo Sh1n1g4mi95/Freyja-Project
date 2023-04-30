@@ -40,6 +40,9 @@ class Web(object):
     def find_by_xpath_displayed(self, xpath: str):
         return self.driver_wait.until(ec.visibility_of_element_located((By.XPATH, xpath))).is_displayed()
 
+    def find_element_by_xpath_clickable(self, xpath: str):
+        return self.driver_wait.until(ec.element_to_be_clickable((By.XPATH, xpath)))
+
     def find_by_name(self, name: str):
         return self.driver_wait.until(ec.visibility_of_element_located((By.NAME, name)))
 
@@ -71,7 +74,7 @@ class Web(object):
         return self.driver.switch_to.frame(frame)
 
     def click_element_by_xpath(self, xpath: str):
-        return self.driver_wait.until(ec.element_to_be_clickable((By.XPATH, xpath))).click()
+        return self.find_element_by_xpath_clickable(xpath).click()
 
     def close(self):
         self.driver.quit()

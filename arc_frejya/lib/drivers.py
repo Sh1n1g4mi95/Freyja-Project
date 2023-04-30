@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # coding: utf-8
+import json
 import logging
 import os
 import re
@@ -215,22 +216,34 @@ class VerWebDriver:
             :param version: webdriver version string
             :return: the version of chromedriver
         """
+        platform = get_platform_architecture()
+        if platform == "darwin":
+            platform = "iOS"
+        elif platform == "win":
+            platform = "Windows"
+        else:
+            platform = "Linux"
         try:
+            major_version = version.split('.')[0]
             if str.lower(nav) == "chrome":
                 doc = urllib.request.urlopen('https://chromedriver.storage.googleapis.com').read()
                 root = elemTree.fromstring(doc)
                 for k in root.iter('{http://doc.s3.amazonaws.com/2006-03-01}Key'):
-                    if k.text.find(version.split('.')[0] + '.') == 0:
+                    if k.text.find(major_version + '.') == 0:
                         return k.text.split('/')[0]
             elif str.lower(nav) == "firefox":   # Nota: este navegador es especialito
                 return "v0.29.0"        # Se elige la versión a pedalete
             elif str.lower(nav) == "edge":
-                with urllib.request.urlopen('https://msedgedriver.azureedge.net') as response:
+                mse_edge_api = 'https://edgeupdates.microsoft.com/api/products'
+                with urllib.request.urlopen(mse_edge_api) as response:
+                    if response.getcode() != 200:
+                        raise urllib.error.URLError('Not Found')
                     doc = response.read()
-                    root = elemTree.fromstring(doc)
-                    for k in root[0].iter("Name"):
-                        if k.text.find(version.split('.')[0] + '.') == 0:
-                            return k.text.split('/')[0]
+                    doc = json.loads(doc)
+                    json_stable = [elem for elem in doc if elem["Product"] == "Stable"][0]
+                    for elem in json_stable["Releases"]:
+                        if elem["Platform"] == platform and elem["ProductVersion"].split(".")[0] == major_version:
+                            return elem["ProductVersion"]
         except Exception as e:
             raise RuntimeError(e)
 
