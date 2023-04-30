@@ -288,13 +288,13 @@ class VerWebDriver:
                 nav_version = self.get_navigator_version(self.browser_type.name, platform, self.logger)
                 major_version = nav_version.split('.')[0]
                 if major_version != driver_major_version:
-                    self.logger.warning(f'Webdriver major version ({driver_major_version}) does not match'
-                                        f' with navigator major version ({major_version}).')
                     if self.browser_type.name == 'firefox':
                         if not driver_exists:
                             self.logger.error(f'Webdriver for Firefox navigator is not allowed to auto download.')
                             # ToDo: hacer en exit del programa
                     else:
+                        self.logger.warning(f'Webdriver major version ({driver_major_version}) does not match'
+                                            f' with navigator major version ({major_version}).')
                         self.download_webdriver(nav_version=nav_version)
         except Exception as e:
             raise e
